@@ -77,7 +77,9 @@ Args parse_args(int argc, char *argv[]) {
 /* ---------- generic CSV loader ---------- */
 
 /*
- * Loads a CSV file into a dynamically allocated array.
+ * Loads a CSV file into a dynamically allocated array. Automatically detects
+ * whether the first line is a header by checking if the first token parses as
+ * a valid integer — if not, the line is treated as a header and skipped.
  *
  * path         - path to the CSV file
  * record_size  - sizeof each record (e.g. sizeof(Employee))
@@ -98,7 +100,27 @@ int load_csv(const char *path, size_t record_size,
     char *arr = malloc(capacity * record_size);
 
     char line[MAX_LINE_LEN];
-    fgets(line, sizeof(line), f); /* skip header */
+
+    /* Auto-detect header: peek at the first line and only skip it if the
+     * first token is not a valid integer (i.e. it looks like a header row). */
+    if (fgets(line, sizeof(line), f)) {
+        char tmp[MAX_LINE_LEN];
+        strncpy(tmp, line, MAX_LINE_LEN);
+        char *tok = strtok(tmp, ",\n");
+        if (tok) {
+            char *endptr;
+            strtol(tok, &endptr, 10);
+            /* If endptr didn't advance at all, it's not a number — treat as header.
+             * Otherwise it's a data row, so parse it now. */
+            if (endptr == tok) {
+                /* header row — discard and move on */
+            } else {
+                /* data row — parse it before entering the loop */
+                if (parse_row(line, arr + count * record_size) == 0)
+                    count++;
+            }
+        }
+    }
 
     while (fgets(line, sizeof(line), f)) {
         if (count == capacity) {
