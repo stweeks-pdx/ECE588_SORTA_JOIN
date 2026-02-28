@@ -16,7 +16,7 @@ trips_per_id = Counter()
 with open("../trips.csv", newline="") as f:
     reader = csv.reader(f)
     for row in reader:
-        emp_id = int(row[0])
+        emp_id = int(row[1])
         trips_per_id[emp_id] += 1
 
 # Partition IDs
