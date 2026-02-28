@@ -41,15 +41,13 @@ def generate_trips(filepath: str) -> None:
 
     trip_ids = valid_ids + invalid_ids
     random.shuffle(trip_ids)
-
-    # Timestamps: monotonically increasing, with random gaps between entries
-    base_ts = int(time.time() * 1000)          # milliseconds since epoch
-    current_ts = base_ts
+    
+    current_ts = int(time.time() * 1000) 
 
     with open(filepath, "w", newline="") as f:
         writer = csv.writer(f)
         for j in range(NUM_TRIPS):
-            current_ts += random.randint(1, 100)                  # small random increment
+            current_ts += random.randint(1, 100)                  # Timestamps: monotonically increasing, with random gaps between entries
             emp_id = trip_ids[j]
             destination = f"destination{j:05d}"                   # 16 chars, fits in 20-char field
             writer.writerow([emp_id, destination, current_ts])
