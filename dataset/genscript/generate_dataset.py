@@ -10,7 +10,7 @@ import time
 
 # ─── Configuration Constants ────────────────────────────────────────────────
 NUM_EMPLOYEES = 20000
-NUM_TRIPS = 100000
+NUM_TRIPS = 10000000
 EMPLOYEES_WITH_TRIPS = 15000       # IDs 0–14999 take trips
 INVALID_ID_START = 20000           # IDs 20000–24999 appear in trips but not employees
 INVALID_ID_END = 24999
@@ -49,7 +49,7 @@ def generate_trips(filepath: str) -> None:
         for j in range(NUM_TRIPS):
             current_ts += random.randint(1, 100)                  # Timestamps: monotonically increasing, with random gaps between entries
             emp_id = trip_ids[j]
-            destination = f"destination{j:05d}"                   # 16 chars, fits in 20-char field
+            destination = f"destination{j:07d}"                   # 18 chars, fits in 20-char field
             writer.writerow([current_ts, emp_id, destination])
     print(f"Wrote {NUM_TRIPS} rows to {filepath}")
 

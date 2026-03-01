@@ -53,3 +53,19 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Generated dataset files
+dataset/employees.csv
+dataset/trips.csv
+
+# Compiled binaries
+naive
+mpi_join
+pthreads_join
+
+# MPI per-rank output files
+results_rank*.csv
+results_mpi.csv
+
+# macOS
+.DS_Store
