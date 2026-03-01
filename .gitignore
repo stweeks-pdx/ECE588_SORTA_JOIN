@@ -61,6 +61,8 @@ dataset/trips.csv
 # Compiled binaries
 naive
 mpi_join
+mpi/mpi_join
+mpi/mpi_join_rma
 pthreads_join
 
 # MPI per-rank output files
