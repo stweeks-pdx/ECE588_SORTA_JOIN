@@ -4,7 +4,7 @@
  *
  * Algorithm:
  *   1. Every rank reads both CSVs independently (I/O outside MPI).
- *   2. Each rank determines its contiguous chunk of trips (heat2d-style).
+ *   2. Each rank determines its contiguous chunk of trips.
  *   3. Each rank builds a hash table from employees where id % n == taskid.
  *   4. Each rank bins its trips chunk by id % n and exchanges via Alltoallv.
  *   5. Each rank probes its received trips against its local hash table.
@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
   }
 
   /* ================================================================== */
-  /* Phase 1: Determine this rank's trips chunk (heat2d-style)          */
+  /* Phase 1: Determine this rank's trips chunk                         */
   /* ================================================================== */
 
   int local_count = num_trips / numtasks;
