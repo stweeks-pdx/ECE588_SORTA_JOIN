@@ -13,7 +13,6 @@
 #define MAX_DEST_LEN    21
 #define MAX_LINE_LEN   256
 
-/* Set to 1 if your CSVs have a header row, 0 if they do not */
 #define SKIP_HEADER 0
 
 typedef struct {
@@ -167,20 +166,19 @@ static int parse_trip(char *line, void *record) {
     return 0;
 }
 
-/* ---------- hash set for employee IDs ---------- */
-/* Open-addressing hash set (linear probing), built once then read-only. */
+// ---------- hash set for employee IDs ----------
+// Open-addressing hash set (linear probing), built once then read-only
 
 typedef struct {
-    uint32_t *keys;     /* employee ids as uint32_t */
-    size_t cap;         /* power of two */
+    uint32_t *keys;     // employee ids as uint32_t
+    size_t cap;         // power of two
     size_t used;
-    int has_sentinel;   /* whether we inserted SENTINEL_KEY as a real key */
+    int has_sentinel;   // whether we inserted SENTINEL_KEY as a real key
 } IdSet;
 
 static const uint32_t SENTINEL_KEY = 0xFFFFFFFFu;
 
 static uint32_t mix32(uint32_t x) {
-    /* decent 32-bit mix (no crypto needed) */
     x ^= x >> 16;
     x *= 0x7feb352du;
     x ^= x >> 15;
@@ -196,7 +194,6 @@ static size_t next_pow2(size_t x) {
 }
 
 static int idset_init(IdSet *s, size_t expected) {
-    /* Keep load factor <= ~0.5 for fast probes */
     size_t cap = next_pow2(expected * 2 + 8);
     s->keys = (uint32_t *)malloc(cap * sizeof(uint32_t));
     if (!s->keys) return -1;
@@ -228,7 +225,7 @@ static void idset_insert(IdSet *s, uint32_t key) {
             s->used++;
             return;
         }
-        if (cur == key) return; /* already present */
+        if (cur == key) return; //Hit
         idx = (idx + 1) & mask;
     }
 }
@@ -240,18 +237,18 @@ static int idset_contains(const IdSet *s, uint32_t key) {
     size_t idx = (size_t)mix32(key) & mask;
     while (1) {
         uint32_t cur = s->keys[idx];
-        if (cur == SENTINEL_KEY) return 0; /* miss */
+        if (cur == SENTINEL_KEY) return 0; //Miss
         if (cur == key) return 1;
         idx = (idx + 1) & mask;
     }
 }
 
-/* ---------- pthread worker (scan trips) ---------- */
+//---------- pthread worker (scan trips) ----------
 
 typedef struct {
     int tid;
-    int start_idx;    /* inclusive */
-    int end_idx;      /* exclusive */
+    int start_idx;    //Inclusive
+    int end_idx;      //exclusive
     const Trip *trips;
     int num_trips;
     const IdSet *idset;
@@ -303,7 +300,7 @@ static int concat_file(FILE *out, const char *path) {
     return 0;
 }
 
-/* ---------- main ---------- */
+// ---------- main ----------
 
 int main(int argc, char *argv[]) {
     Args args = parse_args(argc, argv);
@@ -334,7 +331,6 @@ int main(int argc, char *argv[]) {
     struct timespec t_start, t_end;
     clock_gettime(CLOCK_MONOTONIC, &t_start);
 
-    /* Build hash set of employee IDs (single-threaded, then read-only) */
     IdSet set;
     if (idset_init(&set, (size_t)num_employees) != 0) {
         perror("idset_init");
@@ -362,7 +358,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    /* Partition trips into contiguous chunks */
+    //Partition trips into contiguous chunks
     int base = (num_trips / nthreads);
     int rem  = (num_trips % nthreads);
 
@@ -410,7 +406,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    /* Write final output */
+    //Write final output
     FILE *out = fopen("../test/results.csv", "w");
     if (!out) {
         perror("../test/results.csv");
@@ -427,7 +423,7 @@ int main(int argc, char *argv[]) {
         fclose(out);
     }
 
-    /* Cleanup temp files */
+    //Cleanup temp files
     for (int t = 0; t < nthreads; t++) {
         unlink(ctxs[t].tmp_path);
     }

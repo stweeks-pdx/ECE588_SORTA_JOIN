@@ -154,15 +154,15 @@ int parse_trip(char *line, void *record) {
 
 typedef struct {
     int tid;
-    int start_idx;   /* inclusive */
-    int end_idx;     /* exclusive */
+    int start_idx;   //Inclusive
+    int end_idx;     //Exclusive
     const Employee *employees;
     int num_employees;
     const Trip *trips;
     int num_trips;
     char tmp_path[256];
     long long matches;
-    int err;         /* 0 ok, else errno-style */
+    int err;         // 0 ok, else errno-style
 } ThreadCtx;
 
 static void *worker_join(void *arg) {
@@ -179,7 +179,6 @@ static void *worker_join(void *arg) {
         int eid = ctx->employees[i].id;
         for (int j = 0; j < ctx->num_trips; j++) {
             if (eid == ctx->trips[j].id) {
-                /* NOTE: no header in temp files */
                 fprintf(f, "%d,%s,%lld\n",
                         eid,
                         ctx->trips[j].destination,
@@ -232,7 +231,7 @@ int main(int argc, char *argv[]) {
 
     int nthreads = args.threads;
     if (nthreads > num_employees && num_employees > 0) {
-        /* Dont spawn more threads than employees to partition */
+        // Dont spawn more threads than employees to partition
         nthreads = num_employees;
         if (nthreads < 1) nthreads = 1;
     }
@@ -248,7 +247,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    /* Partition employees into contiguous chunks */
+    //Partition employees into contiguous chunks
     int base = (num_employees / nthreads);
     int rem  = (num_employees % nthreads);
 
@@ -278,7 +277,6 @@ int main(int argc, char *argv[]) {
         int rc = pthread_create(&threads[t], NULL, worker_join, &ctxs[t]);
         if (rc != 0) {
             fprintf(stderr, "pthread_create failed for thread %d (rc=%d)\n", t, rc);
-            /* best-effort join already-started threads */
             for (int k = 0; k < t; k++) pthread_join(threads[k], NULL);
             free(threads);
             free(ctxs);
@@ -300,7 +298,6 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    /* Write final output by concatenating temp parts */
     FILE *out = fopen("./results.csv", "w");
     if (!out) {
         perror(".test/results.csv");
@@ -317,7 +314,6 @@ int main(int argc, char *argv[]) {
         fclose(out);
     }
 
-    /* Cleanup temp files */
     for (int t = 0; t < nthreads; t++) {
         unlink(ctxs[t].tmp_path);
     }
